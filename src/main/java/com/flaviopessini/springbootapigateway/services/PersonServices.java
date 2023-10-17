@@ -1,8 +1,10 @@
 package com.flaviopessini.springbootapigateway.services;
 
 import com.flaviopessini.springbootapigateway.dtos.v1.PersonDTO;
+import com.flaviopessini.springbootapigateway.dtos.v2.PersonDTOV2;
 import com.flaviopessini.springbootapigateway.exceptions.ResourceNotFoundException;
 import com.flaviopessini.springbootapigateway.mapper.Mapper;
+import com.flaviopessini.springbootapigateway.mapper.custom.PersonMapper;
 import com.flaviopessini.springbootapigateway.models.Person;
 import com.flaviopessini.springbootapigateway.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,9 @@ public class PersonServices {
     @Autowired
     PersonRepository personRepository;
 
+    @Autowired
+    PersonMapper personMapper;
+
     public List<PersonDTO> findAll() {
         logger.info("Finding all people!");
         final var persons = this.personRepository.findAll();
@@ -38,6 +43,12 @@ public class PersonServices {
         logger.info("Creating one person!");
         final var person = Mapper.parseObject(p, Person.class);
         return Mapper.parseObject(this.personRepository.save(person), PersonDTO.class);
+    }
+
+    public PersonDTOV2 createV2(PersonDTOV2 p) {
+        logger.info("Creating one person with v2!");
+        final var person = personMapper.convertDTOToEntity(p);
+        return personMapper.convertEntityToDTO(this.personRepository.save(person));
     }
 
     public PersonDTO update(PersonDTO p) {

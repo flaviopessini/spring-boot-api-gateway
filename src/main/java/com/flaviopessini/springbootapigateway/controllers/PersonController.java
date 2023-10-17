@@ -1,6 +1,7 @@
 package com.flaviopessini.springbootapigateway.controllers;
 
 import com.flaviopessini.springbootapigateway.dtos.v1.PersonDTO;
+import com.flaviopessini.springbootapigateway.dtos.v2.PersonDTOV2;
 import com.flaviopessini.springbootapigateway.services.PersonServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,11 @@ public class PersonController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PersonDTO> create(@RequestBody PersonDTO p) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.personServices.create(p));
+    }
+
+    @PostMapping(value = "v2", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PersonDTOV2> createV2(@RequestBody PersonDTOV2 p) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.personServices.createV2(p));
     }
 
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
