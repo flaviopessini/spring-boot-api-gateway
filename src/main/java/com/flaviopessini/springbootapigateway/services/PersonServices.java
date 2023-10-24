@@ -1,5 +1,6 @@
 package com.flaviopessini.springbootapigateway.services;
 
+import com.flaviopessini.springbootapigateway.controllers.PersonController;
 import com.flaviopessini.springbootapigateway.dtos.v1.PersonDTO;
 import com.flaviopessini.springbootapigateway.dtos.v2.PersonDTOV2;
 import com.flaviopessini.springbootapigateway.exceptions.ResourceNotFoundException;
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PersonServices {
@@ -30,19 +34,25 @@ public class PersonServices {
     public List<PersonDTO> findAll() {
         logger.info("Finding all people!");
         final var persons = this.personRepository.findAll();
-        return Mapper.parseListObjects(persons, PersonDTO.class);
+        final var dtos = Mapper.parseListObjects(persons, PersonDTO.class);
+        dtos.forEach(x -> x.add(linkTo(methodOn(PersonController.class).findById(x.getKey())).withSelfRel()));
+        return dtos;
     }
 
     public PersonDTO findById(Long id) {
         logger.info("Finding one person!");
         final var p = this.personRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No records found for this Id!"));
-        return Mapper.parseObject(p, PersonDTO.class);
+        final var dto = Mapper.parseObject(p, PersonDTO.class);
+        dto.add(linkTo(methodOn(PersonController.class).findById(id)).withSelfRel());
+        return dto;
     }
 
     public PersonDTO create(PersonDTO p) {
         logger.info("Creating one person!");
         final var person = Mapper.parseObject(p, Person.class);
-        return Mapper.parseObject(this.personRepository.save(person), PersonDTO.class);
+        final var dto = Mapper.parseObject(this.personRepository.save(person), PersonDTO.class);
+        dto.add(linkTo(methodOn(PersonController.class).findById(dto.getKey())).withSelfRel());
+        return dto;
     }
 
     public PersonDTOV2 createV2(PersonDTOV2 p) {
@@ -59,7 +69,9 @@ public class PersonServices {
         update.setLastName(person.getLastName());
         update.setAddress(person.getAddress());
         update.setGender(person.getGender());
-        return Mapper.parseObject(this.personRepository.save(update), PersonDTO.class);
+        final var dto = Mapper.parseObject(this.personRepository.save(update), PersonDTO.class);
+        dto.add(linkTo(methodOn(PersonController.class).findById(dto.getKey())).withSelfRel());
+        return dto;
     }
 
     public void delete(Long id) {

@@ -23,7 +23,7 @@ public class ModelMapperTest {
     @Test
     public void parseEntityToDTO() {
         final var output = Mapper.parseObject(input.mockEntity(), PersonDTO.class);
-        assertEquals(Long.valueOf(0L), output.getId());
+        assertEquals(Long.valueOf(0L), output.getKey());
         assertEquals("First name 0", output.getFirstName());
         assertEquals("Last name 0", output.getLastName());
         assertEquals("Address 0", output.getAddress());
@@ -35,7 +35,7 @@ public class ModelMapperTest {
         final var output = Mapper.parseListObjects(input.mockEntityList(), PersonDTO.class);
         final var zero = output.get(0);
 
-        assertEquals(Long.valueOf(0L), zero.getId());
+        assertEquals(Long.valueOf(0L), zero.getKey());
         assertEquals("First name 0", zero.getFirstName());
         assertEquals("Last name 0", zero.getLastName());
         assertEquals("Address 0", zero.getAddress());
@@ -43,7 +43,7 @@ public class ModelMapperTest {
 
         final var seven = output.get(7);
 
-        assertEquals(Long.valueOf(7L), seven.getId());
+        assertEquals(Long.valueOf(7L), seven.getKey());
         assertEquals("First name 7", seven.getFirstName());
         assertEquals("Last name 7", seven.getLastName());
         assertEquals("Address 7", seven.getAddress());

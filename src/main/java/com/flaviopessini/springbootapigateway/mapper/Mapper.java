@@ -1,5 +1,7 @@
 package com.flaviopessini.springbootapigateway.mapper;
 
+import com.flaviopessini.springbootapigateway.dtos.v1.PersonDTO;
+import com.flaviopessini.springbootapigateway.models.Person;
 import org.modelmapper.ModelMapper;
 
 import java.util.ArrayList;
@@ -8,6 +10,11 @@ import java.util.List;
 public class Mapper {
 
     private final static ModelMapper mapper = new ModelMapper();
+
+    static {
+        mapper.createTypeMap(Person.class, PersonDTO.class).addMapping(Person::getId, PersonDTO::setKey);
+    }
+
 
     public static <O, D> D parseObject(O origin, Class<D> destination) {
         return mapper.map(origin, destination);
