@@ -1,6 +1,7 @@
 package com.flaviopessini.springbootapigateway.exceptions.handler;
 
 import com.flaviopessini.springbootapigateway.exceptions.ExceptionResponse;
+import com.flaviopessini.springbootapigateway.exceptions.InvalidJwtAuthenticationException;
 import com.flaviopessini.springbootapigateway.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,11 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     public final ResponseEntity<ExceptionResponse> handleNotFoundExceptions(Exception ex, WebRequest request) {
         final var e = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(e, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidJwtAuthenticationException.class)
+    public final ResponseEntity<ExceptionResponse> handleInvalidJwtAuthenticationException(Exception ex, WebRequest request) {
+        final var e = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(e, HttpStatus.FORBIDDEN);
     }
 }
