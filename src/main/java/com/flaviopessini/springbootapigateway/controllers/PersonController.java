@@ -10,12 +10,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/person/v1")
@@ -41,8 +43,13 @@ public class PersonController {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content),
             }
     )
-    public ResponseEntity<List<PersonDTO>> all() {
-        return ResponseEntity.ok().body(this.personServices.findAll());
+    public ResponseEntity<PagedModel<EntityModel<PersonDTO>>> all(
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "25") Integer size,
+            @RequestParam(value = "direction", defaultValue = "asc") String direction) {
+        final var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        final var pageable = PageRequest.of(page, size, Sort.by(sortDirection, "firstName"));
+        return ResponseEntity.ok().body(this.personServices.findAll(pageable));
     }
 
 
@@ -134,5 +141,31 @@ public class PersonController {
     )
     public ResponseEntity<PersonDTO> disablePerson(@PathVariable(value = "id") Long id) {
         return ResponseEntity.ok().body(this.personServices.disablePerson(id));
+    }
+
+    @GetMapping(value = "findPersonsByName/{firstName}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Operation(
+            summary = "Finds all person by name", description = "Finds all person by name", tags = {"Person"},
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200", content = {
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    array = @ArraySchema(schema = @Schema(implementation = PersonDTO.class))
+                            )
+                    }),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content),
+            }
+    )
+    public ResponseEntity<PagedModel<EntityModel<PersonDTO>>> allByName(
+            @PathVariable(value = "firstName") String firstName,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "25") Integer size,
+            @RequestParam(value = "direction", defaultValue = "asc") String direction) {
+        final var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        final var pageable = PageRequest.of(page, size, Sort.by(sortDirection, "firstName"));
+        return ResponseEntity.ok().body(this.personServices.findPersonsByName(firstName, pageable));
     }
 }

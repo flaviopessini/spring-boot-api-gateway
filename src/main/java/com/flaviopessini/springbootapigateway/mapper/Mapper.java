@@ -3,6 +3,7 @@ package com.flaviopessini.springbootapigateway.mapper;
 import com.flaviopessini.springbootapigateway.dtos.v1.PersonDTO;
 import com.flaviopessini.springbootapigateway.models.Person;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 
 import java.util.ArrayList;
 import java.util.List;

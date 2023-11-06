@@ -9,10 +9,13 @@ import com.flaviopessini.springbootapigateway.mapper.custom.PersonMapper;
 import com.flaviopessini.springbootapigateway.models.Person;
 import com.flaviopessini.springbootapigateway.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
@@ -32,12 +35,25 @@ public class PersonServices {
     @Autowired
     PersonMapper personMapper;
 
-    public List<PersonDTO> findAll() {
+    @Autowired
+    PagedResourcesAssembler<PersonDTO> assembler;
+
+    public PagedModel<EntityModel<PersonDTO>> findAll(PageRequest pageable) {
         logger.info("Finding all people!");
-        final var persons = this.personRepository.findAll();
-        final var dtos = Mapper.parseListObjects(persons, PersonDTO.class);
-        dtos.forEach(x -> x.add(linkTo(methodOn(PersonController.class).findById(x.getKey())).withSelfRel()));
-        return dtos;
+        final var persons = this.personRepository.findAll(pageable);
+        final var personDTOPage = persons.map(p -> Mapper.parseObject(p, PersonDTO.class));
+        personDTOPage.map(p -> p.add(linkTo(methodOn(PersonController.class).findById(p.getKey())).withSelfRel()));
+        final var link = linkTo(methodOn(PersonController.class).all(pageable.getPageNumber(), pageable.getPageSize(), "asc")).withSelfRel();
+        return assembler.toModel(personDTOPage, link);
+    }
+
+    public PagedModel<EntityModel<PersonDTO>> findPersonsByName(String firstName, PageRequest pageable) {
+        logger.info("Finding all people by firstName!");
+        final var persons = this.personRepository.findPersonsByName(firstName, pageable);
+        final var personDTOPage = persons.map(p -> Mapper.parseObject(p, PersonDTO.class));
+        personDTOPage.map(p -> p.add(linkTo(methodOn(PersonController.class).findById(p.getKey())).withSelfRel()));
+        final var link = linkTo(methodOn(PersonController.class).all(pageable.getPageNumber(), pageable.getPageSize(), "asc")).withSelfRel();
+        return assembler.toModel(personDTOPage, link);
     }
 
     public PersonDTO findById(Long id) {
